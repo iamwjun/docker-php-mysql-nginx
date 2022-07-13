@@ -1,0 +1,56 @@
+version: "1.0.0-beta"
+
+networks:
+  webnet:
+    driver: bridge
+
+services:
+  nginx:
+    image: nginx
+    container_name: nginx-webnet
+    ports:
+      - "80:80"
+    volumes:
+      - /Users/wujun/github/iplash/myers-briggs-type-indicator:/var/www/html/project
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/log:/var/log/nginx
+
+    depends_on:
+      - php
+      - mysql
+
+    networks:
+      - webnet
+
+  mysql:
+    image: mysql:5.6
+    container_name: mysql-webnet
+
+    platform: linux/amd64
+    tty: true
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: mbti
+      MYSQL_ROOT_USER: root
+      MYSQL_ROOT_PASSWORD: XyZ321!
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+
+    networks:
+      - webnet
+
+  php:
+    container_name: php-webnet
+    build:
+      context: ./php
+
+    restart: always
+    volumes:
+      - /Users/wujun/github/iplash/myers-briggs-type-indicator:/var/www/html/project
+    ports:
+      - "9000:9000"
+    networks:
+      - webnet
